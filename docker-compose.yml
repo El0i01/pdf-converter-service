@@ -1,0 +1,31 @@
+version: "3.8"
+
+services:
+  pdf-converter:
+    # Portainer irá clonar o repo e usar o Dockerfile no mesmo diretório
+    build: .
+    restart: unless-stopped
+    networks:
+      - traefik_public
+    volumes:
+      - pdf_files:/usr/src/app/temp
+    environment:
+      # A URL pública final que seu serviço usará
+      - PUBLIC_URL=https://pdf.cyberselva.com
+      # Porta interna do container
+      - PORT=3000
+    deploy:
+      labels:
+        - "traefik.enable=true"
+        - "traefik.docker.network=traefik_public"
+        - "traefik.http.routers.pdf-converter.rule=Host(`pdf.cyberselva.com`)"
+        - "traefik.http.routers.pdf-converter.entrypoints=websecure"
+        - "traefik.http.routers.pdf-converter.tls.certresolver=letsencrypt"
+        - "traefik.http.services.pdf-converter.loadbalancer.server.port=3000"
+
+networks:
+  traefik_public:
+    external: true
+
+volumes:
+  pdf_files:
